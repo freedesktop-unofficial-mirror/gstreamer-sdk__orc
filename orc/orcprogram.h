@@ -200,6 +200,8 @@ typedef enum {
 #define ORC_COMPILE_RESULT_IS_SUCCESSFUL(x) ((x) < 0x100)
 #define ORC_COMPILE_RESULT_IS_FATAL(x) ((x) >= 0x200)
 
+#define ORC_VAR_FLAG_VOLATILE_WORKAROUND (1<<0)
+
 /**
  * OrcVariable:
  *
@@ -235,6 +237,7 @@ struct _OrcVariable {
   int load_dest;
   int update_type;
   int need_offset_reg;
+  unsigned int flags;
 };
 
 /**
