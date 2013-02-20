@@ -136,6 +136,17 @@ orc_program_new_as (int size1, int size2)
   return p;
 }
 
+OrcProgram *
+orc_program_new_from_static_bytecode (const orc_uint8 *bytecode)
+{
+  OrcProgram *p;
+
+  p = orc_program_new ();
+  orc_bytecode_parse_function (p, bytecode);
+
+  return p;
+}
+
 /**
  * orc_program_free:
  * @program: a pointer to an OrcProgram structure
@@ -181,6 +192,19 @@ orc_program_set_name (OrcProgram *program, const char *name)
     free (program->name);
   }
   program->name = strdup (name);
+}
+
+/**
+ * orc_program_set_line:
+ * @program: a pointer to an OrcProgram structure
+ * @name: define where we are in the source
+ *
+ * Sets the current line of the program.
+ */
+void
+orc_program_set_line (OrcProgram *program, unsigned int line)
+{
+  program->current_line = line;
 }
 
 /**
@@ -606,7 +630,7 @@ orc_program_add_accumulator (OrcProgram *program, int size, const char *name)
   program->vars[i].vartype = ORC_VAR_TYPE_ACCUMULATOR;
   program->vars[i].size = size;
   program->vars[i].name = strdup(name);
-  program->n_param_vars++;
+  program->n_accum_vars++;
 
   return i;
 }
@@ -827,9 +851,10 @@ orc_program_append_str_2 (OrcProgram *program, const char *name,
 
   insn = program->insns + program->n_insns;
 
+  insn->line = program->current_line;
   insn->opcode = orc_opcode_find_by_name (name);
   if (!insn->opcode) {
-    ORC_ERROR ("unknown opcode: %s", name);
+    ORC_ERROR ("unknown opcode: %s at line %d", name, insn->line);
   }
   args[0] = orc_program_find_var_by_name (program, arg1);
   args[1] = orc_program_find_var_by_name (program, arg2);

@@ -70,6 +70,29 @@ sse
 x86
 
 
+<!-- ##### MACRO ARRAY_SIZE ##### -->
+<para>
+
+</para>
+
+@x: 
+
+<!-- ##### MACRO MAX ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
+<!-- ##### MACRO MIN ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
 <!-- ##### MACRO ORC_ARM_A1 ##### -->
 <para>
 
@@ -178,17 +201,88 @@ x86
 </para>
 
 
+<!-- ##### MACRO ORC_BEGIN_DECLS ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO ORC_CLAMP ##### -->
+<para>
+
+</para>
+
+@x: 
+@a: 
+@b: 
+
+<!-- ##### MACRO ORC_END_DECLS ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO ORC_EXPORT ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO ORC_GNUC_PREREQ ##### -->
+<para>
+
+</para>
+
+@maj: 
+@min: 
+
+<!-- ##### MACRO ORC_GNU_PRINTF ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
+<!-- ##### MACRO ORC_INTERNAL ##### -->
+<para>
+
+</para>
+
+
 <!-- ##### MACRO ORC_OPCODE_N_RULES ##### -->
 <para>
 
 </para>
 
 
+<!-- ##### MACRO ORC_PTR_TO_INT ##### -->
+<para>
+
+</para>
+
+@x: 
+
+<!-- ##### MACRO ORC_READ_UINT32_LE ##### -->
+<para>
+
+</para>
+
+@ptr: 
+
 <!-- ##### MACRO ORC_REGCLASS_GP ##### -->
 <para>
 
 </para>
 
+
+<!-- ##### MACRO ORC_STRUCT_OFFSET ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@member: 
 
 <!-- ##### MACRO ORC_VEC1_REG_BASE ##### -->
 <para>
@@ -201,6 +295,14 @@ x86
 
 </para>
 
+
+<!-- ##### MACRO ORC_WRITE_UINT32_LE ##### -->
+<para>
+
+</para>
+
+@ptr: 
+@val: 
 
 <!-- ##### STRUCT OrcArgument ##### -->
 <para>
@@ -246,6 +348,41 @@ x86
 @name: 
 @size: 
 
+<!-- ##### FUNCTION get_cpuinfo_line ##### -->
+<para>
+
+</para>
+
+@cpuinfo: 
+@tag: 
+@Returns: 
+
+<!-- ##### FUNCTION get_file ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+<!-- ##### FUNCTION get_file_int ##### -->
+<para>
+
+</para>
+
+@file: 
+@value: 
+@Returns: 
+
+<!-- ##### FUNCTION get_tag_value ##### -->
+<para>
+
+</para>
+
+@s: 
+@tag: 
+@Returns: 
+
 <!-- ##### FUNCTION mmx_emit_loadi_s16 ##### -->
 <para>
 
@@ -275,6 +412,12 @@ x86
 @compiler: 
 @dest: 
 @imm: 
+
+<!-- ##### TYPEDEF orc_bool ##### -->
+<para>
+
+</para>
+
 
 <!-- ##### FUNCTION orc_compiler_allocate_codemem ##### -->
 <para>
@@ -575,6 +718,15 @@ x86
 </para>
 
 @compiler: 
+
+<!-- ##### FUNCTION strsplit ##### -->
+<para>
+
+</para>
+
+@s: 
+@delimiter: 
+@Returns: 
 
 <!-- ##### VARIABLE x86_64 ##### -->
 <para>

@@ -1,8 +1,11 @@
 
 #include "config.h"
 
+#define ORC_ENABLE_UNSTABLE_API
+
 #include <orc/orc.h>
 #include <orc/orcparse.h>
+#include <orc/orcbytecode.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +34,8 @@ OrcProgram **programs;
 int use_inline = FALSE;
 int use_code = FALSE;
 int use_lazy_init = FALSE;
+int use_backup = TRUE;
+int use_internal = FALSE;
 
 const char *init_function = NULL;
 
@@ -72,8 +77,11 @@ void help (void)
   printf("  --compat VERSION        Generate code compatible with Orc version VERSION\n");
   printf("  --inline                Generate inline functions in header\n");
   printf("  --no-inline             Do not generate inline functions in header\n");
+  printf("  --internal              Mark functions in header for internal visibility\n");
+  printf("  --no-internal           Do not mark functions in header for internal visibility\n");
   printf("  --init-function FUNCTION  Generate initialization function\n");
   printf("  --lazy-init             Do Orc compile at function execution\n");
+  printf("  --no-backup             Do not generate backup functions\n");
   printf("\n");
 
   exit (0);
@@ -130,6 +138,10 @@ main (int argc, char *argv[])
       use_inline = TRUE;
     } else if (strcmp(argv[i], "--no-inline") == 0) {
       use_inline = FALSE;
+    } else if (strcmp(argv[i], "--internal") == 0) {
+      use_internal = TRUE;
+    } else if (strcmp(argv[i], "--no-internal") == 0) {
+      use_internal = FALSE;
     } else if (strcmp(argv[i], "--init-function") == 0) {
       if (i+1 < argc) {
         init_function = argv[i+1];
@@ -155,6 +167,8 @@ main (int argc, char *argv[])
       }
     } else if (strcmp(argv[i], "--lazy-init") == 0) {
       use_lazy_init = TRUE;
+    } else if (strcmp(argv[i], "--no-backup") == 0) {
+      use_backup = FALSE;
     } else if (strncmp(argv[i], "-", 1) == 0) {
       printf("Unknown option: %s\n", argv[i]);
       exit (1);
@@ -336,9 +350,11 @@ main (int argc, char *argv[])
     fprintf(output, "#include <orc-test/orctest.h>\n");
     fprintf(output, "%s", orc_target_get_asm_preamble ("c"));
     fprintf(output, "\n");
-    for(i=0;i<n;i++){
-      fprintf(output, "/* %s */\n", programs[i]->name);
-      output_code_backup (programs[i], output);
+    if (use_backup) {
+      for(i=0;i<n;i++){
+        fprintf(output, "/* %s */\n", programs[i]->name);
+        output_code_backup (programs[i], output);
+      }
     }
     fprintf(output, "\n");
     fprintf(output, "static int quiet = 0;\n");
@@ -610,7 +626,11 @@ output_prototype (OrcProgram *p, FILE *output)
 void
 output_code_header (OrcProgram *p, FILE *output)
 {
-  fprintf(output, "void ");
+  if(use_internal) {
+    fprintf(output, "ORC_INTERNAL void ");
+  } else {
+    fprintf(output, "void ");
+  }
   output_prototype (p, output);
   fprintf(output, ";\n");
 }
@@ -634,7 +654,7 @@ output_code_backup (OrcProgram *p, FILE *output)
     if (ORC_COMPILE_RESULT_IS_SUCCESSFUL(result)) {
       fprintf(output, "%s\n", orc_program_get_asm_code (p));
     } else {
-      printf("Failed to compile %s\n", p->name);
+      printf("Failed to compile backup code for '%s'\n", p->name);
       error = TRUE;
     }
   }
@@ -658,7 +678,7 @@ output_code_no_orc (OrcProgram *p, FILE *output)
     if (ORC_COMPILE_RESULT_IS_SUCCESSFUL(result)) {
       fprintf(output, "%s\n", orc_program_get_asm_code (p));
     } else {
-      printf("Failed to compile %s\n", p->name);
+      printf("Failed to compile no orc for '%s'\n", p->name);
       error = TRUE;
     }
   }
@@ -675,7 +695,9 @@ output_code (OrcProgram *p, FILE *output)
   fprintf(output, "#ifdef DISABLE_ORC\n");
   output_code_no_orc (p, output);
   fprintf(output, "#else\n");
-  output_code_backup (p, output);
+  if (use_backup) {
+    output_code_backup (p, output);
+  }
   output_code_execute (p, output, FALSE);
   fprintf(output, "#endif\n");
   fprintf(output, "\n");
@@ -858,6 +880,65 @@ output_program_generation (OrcProgram *p, FILE *output, int is_inline)
   OrcVariable *var;
   int i;
 
+  if (ORC_VERSION(0,4,16,1) <= compat) {
+    OrcBytecode *bytecode;
+    int i;
+
+    bytecode = orc_bytecode_from_program (p);
+
+    fprintf(output, "#if 1\n");
+    //fprintf(output, "#ifdef bytecode\n");
+    fprintf(output, "    static const orc_uint8 bc[] = {\n");
+    for(i=0;i<bytecode->length;i++) {
+      if ((i&0xf) == 0) {
+        fprintf(output, "      ");
+      }
+      fprintf(output, "%d, ", bytecode->bytecode[i]);
+      if ((i&0xf) == 15) {
+        fprintf(output, "\n");
+      }
+    }
+    if ((i&0xf) != 15) {
+      fprintf(output, "\n");
+    }
+    fprintf(output, "    };\n");
+    fprintf(output, "    p = orc_program_new_from_static_bytecode (bc);\n");
+    //fprintf(output, "   orc_program_set_name (p, \"%s\");\n", p->name);
+    if (use_backup && !is_inline) {
+      fprintf(output, "    orc_program_set_backup_function (p, _backup_%s);\n",
+          p->name);
+    }
+
+#if 0
+    /* CHECK */
+    {
+      OrcProgram *p2 = orc_program_new_from_static_bytecode (bytecode->bytecode);
+      OrcBytecode *bytecode2 = bytecode2 = orc_bytecode_from_program (p2);
+
+      fprintf(output, "#ifdef badbytecode\n");
+      fprintf(output, "    static const orc_uint8 bc[] = {\n");
+      for(i=0;i<bytecode2->length;i++) {
+        if ((i&0xf) == 0) {
+          fprintf(output, "      ");
+        }
+        fprintf(output, "%s%d, ",
+            (bytecode->bytecode[i] == bytecode2->bytecode[i]) ? "" : "/* */",
+            bytecode2->bytecode[i]);
+        if ((i&0xf) == 15) {
+          fprintf(output, "\n");
+        }
+      }
+      if ((i&0xf) != 15) {
+        fprintf(output, "\n");
+      }
+      fprintf(output, "    };\n");
+      fprintf(output, "#endif\n");
+    }
+#endif
+
+    fprintf(output, "#else\n");
+  }
+
   fprintf(output, "      p = orc_program_new ();\n");
   if (p->constant_n != 0) {
     fprintf(output, "      orc_program_set_constant_n (p, %d);\n",
@@ -866,17 +947,17 @@ output_program_generation (OrcProgram *p, FILE *output, int is_inline)
   if (p->n_multiple != 0) {
     REQUIRE(0,4,14,1);
     fprintf(output, "      orc_program_set_n_multiple (p, %d);\n",
-        p->constant_n);
+        p->n_multiple);
   }
   if (p->n_minimum != 0) {
     REQUIRE(0,4,14,1);
     fprintf(output, "      orc_program_set_n_minimum (p, %d);\n",
-        p->constant_n);
+        p->n_minimum);
   }
   if (p->n_maximum != 0) {
     REQUIRE(0,4,14,1);
     fprintf(output, "      orc_program_set_n_maximum (p, %d);\n",
-        p->constant_n);
+        p->n_maximum);
   }
   if (p->is_2d) {
     fprintf(output, "      orc_program_set_2d (p);\n");
@@ -886,7 +967,7 @@ output_program_generation (OrcProgram *p, FILE *output, int is_inline)
     }
   }
   fprintf(output, "      orc_program_set_name (p, \"%s\");\n", p->name);
-  if (!is_inline) {
+  if (use_backup && !is_inline) {
     fprintf(output, "      orc_program_set_backup_function (p, _backup_%s);\n",
         p->name);
   }
@@ -1016,6 +1097,10 @@ output_program_generation (OrcProgram *p, FILE *output, int is_inline)
           enumnames[args[3]]);
     }
   }
+
+  if (ORC_VERSION(0,4,16,1) <= compat) {
+    fprintf(output, "#endif\n");
+  }
 }
 
 void
@@ -1078,8 +1163,10 @@ output_code_test (OrcProgram *p, FILE *output)
     }
   }
   fprintf(output, "    orc_program_set_name (p, \"%s\");\n", p->name);
-  fprintf(output, "    orc_program_set_backup_function (p, _backup_%s);\n",
-      p->name);
+  if (use_backup) {
+    fprintf(output, "    orc_program_set_backup_function (p, _backup_%s);\n",
+        p->name);
+  }
   for(i=0;i<4;i++){
     var = &p->vars[ORC_VAR_D1 + i];
     if (var->size) {
@@ -1207,19 +1294,21 @@ output_code_test (OrcProgram *p, FILE *output)
     fprintf(output, "    }\n");
     fprintf(output, "\n");
   }
-  fprintf(output, "    ret = orc_test_compare_output_backup (p);\n");
-  fprintf(output, "    if (!ret) {\n");
-  fprintf(output, "      error = TRUE;\n");
-  fprintf(output, "    } else if (!quiet) {\n");
-  fprintf(output, "      printf (\"    backup function  :   PASSED\\n\");\n");
-  fprintf(output, "    }\n");
-  fprintf(output, "\n");
-  if (compat >= ORC_VERSION(0,4,7,1)) {
-    fprintf(output, "    if (benchmark) {\n");
-    fprintf(output, "      printf (\"    cycles (backup)  :   %%g\\n\",\n");
-    fprintf(output, "          orc_test_performance_full (p, ORC_TEST_FLAGS_BACKUP, NULL));\n");
+  if (use_backup) {
+    fprintf(output, "    ret = orc_test_compare_output_backup (p);\n");
+    fprintf(output, "    if (!ret) {\n");
+    fprintf(output, "      error = TRUE;\n");
+    fprintf(output, "    } else if (!quiet) {\n");
+    fprintf(output, "      printf (\"    backup function  :   PASSED\\n\");\n");
     fprintf(output, "    }\n");
     fprintf(output, "\n");
+    if (compat >= ORC_VERSION(0,4,7,1)) {
+      fprintf(output, "    if (benchmark) {\n");
+      fprintf(output, "      printf (\"    cycles (backup)  :   %%g\\n\",\n");
+      fprintf(output, "          orc_test_performance_full (p, ORC_TEST_FLAGS_BACKUP, NULL));\n");
+      fprintf(output, "    }\n");
+      fprintf(output, "\n");
+    }
   }
   fprintf(output, "    ret = orc_test_compare_output (p);\n");
   fprintf(output, "    if (ret == ORC_TEST_INDETERMINATE && !quiet) {\n");
@@ -1258,7 +1347,7 @@ output_code_assembly (OrcProgram *p, FILE *output)
     if (ORC_COMPILE_RESULT_IS_SUCCESSFUL(result)) {
       fprintf(output, "%s\n", orc_program_get_asm_code (p));
     } else {
-      printf("Failed to compile %s\n", p->name);
+      printf("Failed to compile assembly for '%s'\n", p->name);
       error = TRUE;
     }
   }
