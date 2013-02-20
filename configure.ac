@@ -1,5 +1,5 @@
 AC_PREREQ([2.58])
-AC_INIT(orc,0.4.16)
+AC_INIT(orc,0.4.17)
 dnl don't forget to update libversion
 
 AS_NANO(ORC_GIT=no,ORC_GIT=yes)
@@ -17,7 +17,7 @@ dnl - library source changed -> increment REVISION
 dnl - interfaces added/removed/changed -> increment CURRENT, REVISION = 0
 dnl - interfaces added -> increment AGE
 dnl - interfaces removed -> AGE = 0
-ORC_LIBVERSION="16:0:16"
+ORC_LIBVERSION="17:0:17"
 AC_SUBST(ORC_LIBVERSION)
 AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_TAGS([])
@@ -111,11 +111,15 @@ case "${host_os}" in
     ;;
   *)
     AC_DEFINE(HAVE_THREAD_PTHREAD, 1, [Use pthread thread code])
+    PTHREAD_CFLAGS=
+    PTHREAD_LIBS=-lpthread
     ;;
 esac
+AC_SUBST(PTHREAD_CFLAGS)
+AC_SUBST(PTHREAD_LIBS)
 
 AC_ARG_ENABLE(backend,
-  AC_HELP_STRING([--enable-backend],[sse,mmx,neon,arm,all (default all)]),
+  AC_HELP_STRING([--enable-backend],[sse,mmx,neon,mips,all (default all)]),
     [], [enable_backend=all])
 case "${enable_backend}" in
   sse)
@@ -134,13 +138,18 @@ case "${enable_backend}" in
     ENABLE_BACKEND_NEON=yes
     AC_DEFINE(ENABLE_BACKEND_NEON, 1, [Enable NEON backend])
     ;;
-  arm)
-    ENABLE_BACKEND_ARM=yes
-    AC_DEFINE(ENABLE_BACKEND_ARM, 1, [Enable Arm backend])
-    ;;
+### ARM backend is disabled until it has decent coverage
+#  arm)
+#    ENABLE_BACKEND_ARM=yes
+#    AC_DEFINE(ENABLE_BACKEND_ARM, 1, [Enable Arm backend])
+#    ;;
   c64x)
     ENABLE_BACKEND_C64X=yes
     AC_DEFINE(ENABLE_BACKEND_C64X, 1, [Enable c64x backend])
+    ;;
+  mips)
+    ENABLE_BACKEND_MIPS=yes
+    AC_DEFINE(ENABLE_BACKEND_MIPS, 1, [Enable MIPS backend])
     ;;
   all|auto)
     ENABLE_BACKEND_SSE=yes
@@ -151,10 +160,12 @@ case "${enable_backend}" in
     AC_DEFINE(ENABLE_BACKEND_ALTIVEC, 1, [Enable Altivec backend])
     ENABLE_BACKEND_NEON=yes
     AC_DEFINE(ENABLE_BACKEND_NEON, 1, [Enable NEON backend])
-    ENABLE_BACKEND_ARM=yes
-    AC_DEFINE(ENABLE_BACKEND_ARM, 1, [Enable Arm backend])
+#    ENABLE_BACKEND_ARM=yes
+#    AC_DEFINE(ENABLE_BACKEND_ARM, 1, [Enable Arm backend])
     ENABLE_BACKEND_C64X=yes
     AC_DEFINE(ENABLE_BACKEND_C64X, 1, [Enable c64x backend])
+    ENABLE_BACKEND_MIPS=yes
+    AC_DEFINE(ENABLE_BACKEND_MIPS, 1, [Enable MIPS backend])
     ;;
 esac
 AM_CONDITIONAL(ENABLE_BACKEND_SSE, test "x$ENABLE_BACKEND_SSE" = "xyes")
@@ -163,6 +174,7 @@ AM_CONDITIONAL(ENABLE_BACKEND_ALTIVEC, test "x$ENABLE_BACKEND_ALTIVEC" = "xyes")
 AM_CONDITIONAL(ENABLE_BACKEND_NEON, test "x$ENABLE_BACKEND_NEON" = "xyes")
 AM_CONDITIONAL(ENABLE_BACKEND_ARM, test "x$ENABLE_BACKEND_ARM" = "xyes")
 AM_CONDITIONAL(ENABLE_BACKEND_C64X, test "x$ENABLE_BACKEND_C64X" = "xyes")
+AM_CONDITIONAL(ENABLE_BACKEND_MIPS, test "x$ENABLE_BACKEND_MIPS" = "xyes")
 
 
 AC_DEFINE(ORC_EXPORTS, 1, [Defined for compiling internal code])

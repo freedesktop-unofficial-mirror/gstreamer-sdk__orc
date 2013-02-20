@@ -110,15 +110,6 @@ misc
 
 
 
-<!-- ##### MACRO ORC_STRUCT_OFFSET ##### -->
-<para>
-
-</para>
-
-@struct_type: 
-@member: 
-
-
 <!-- ##### ENUM OrcVarType ##### -->
 <para>
 
@@ -162,81 +153,6 @@ misc
 
 @code: 
 @programs: 
-@Returns: 
-
-
-<!-- ##### MACRO ARRAY_SIZE ##### -->
-<para>
-
-</para>
-
-@x: 
-
-
-<!-- ##### MACRO MAX ##### -->
-<para>
-
-</para>
-
-@a: 
-@b: 
-
-
-<!-- ##### MACRO MIN ##### -->
-<para>
-
-</para>
-
-@a: 
-@b: 
-
-
-<!-- ##### FUNCTION get_cpuinfo_line ##### -->
-<para>
-
-</para>
-
-@cpuinfo: 
-@tag: 
-@Returns: 
-
-
-<!-- ##### FUNCTION get_file ##### -->
-<para>
-
-</para>
-
-@file: 
-@Returns: 
-
-
-<!-- ##### FUNCTION get_file_int ##### -->
-<para>
-
-</para>
-
-@file: 
-@value: 
-@Returns: 
-
-
-<!-- ##### FUNCTION get_tag_value ##### -->
-<para>
-
-</para>
-
-@s: 
-@tag: 
-@Returns: 
-
-
-<!-- ##### FUNCTION strsplit ##### -->
-<para>
-
-</para>
-
-@s: 
-@delimiter: 
 @Returns: 
 
 

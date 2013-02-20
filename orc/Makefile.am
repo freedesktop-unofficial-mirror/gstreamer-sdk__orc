@@ -3,7 +3,7 @@ pkgincludedir = $(includedir)/orc-@ORC_MAJORMINOR@/orc
 
 lib_LTLIBRARIES = liborc-@ORC_MAJORMINOR@.la
 
-liborc_@ORC_MAJORMINOR@_la_LIBADD = $(LIBM) $(LIBRT)
+liborc_@ORC_MAJORMINOR@_la_LIBADD = $(LIBM) $(LIBRT) $(PTHREAD_LIBS)
 liborc_@ORC_MAJORMINOR@_la_LDFLAGS = \
 	-version-info $(ORC_LIBVERSION) \
 	-no-undefined -export-symbols-regex 'orc_'
@@ -12,6 +12,7 @@ liborc_@ORC_MAJORMINOR@_la_CFLAGS = $(ORC_CFLAGS) \
 
 liborc_@ORC_MAJORMINOR@_la_SOURCES = \
 	orc.c \
+	orcbytecode.c \
 	orcemulateopcodes.c \
 	orcexecutor.c \
 	orcfunctions.c \
@@ -57,6 +58,9 @@ endif
 if ENABLE_BACKEND_C64X
 liborc_@ORC_MAJORMINOR@_la_SOURCES += orcprogram-c64x-c.c
 endif
+if ENABLE_BACKEND_MIPS
+liborc_@ORC_MAJORMINOR@_la_SOURCES += orcmips.c orcprogram-mips.c orcrules-mips.c
+endif
 
 if HAVE_I386
 liborc_@ORC_MAJORMINOR@_la_SOURCES += orccpu-x86.c
@@ -72,34 +76,56 @@ liborc_@ORC_MAJORMINOR@_la_SOURCES += orccpu-arm.c
 endif
 
 pkginclude_HEADERS = \
+	orc-stdint.h \
 	orc.h \
+	orcarm.h \
+	orcbytecode.h \
+	orcbytecodes.h \
+	orccode.h \
+	orccompiler.h \
+	orcconstant.h \
+	orccpu.h \
+	orccpuinsn.h \
 	orcdebug.h \
-	orcprogram.h \
 	orcemulateopcodes.h \
+	orcexecutor.h \
 	orcfunctions.h \
-	orcutils.h \
-	orcparse.h \
-	opcodes.h \
-	orconce.h \
-	orcsse.h \
+	orcinstruction.h \
+	orcinternal.h \
+	orclimits.h \
 	orcmmx.h \
 	orcneon.h \
-	orcx86.h \
+	orconce.h \
+	orcopcode.h \
+	orcparse.h \
 	orcpowerpc.h \
-	orcarm.h \
+	orcprogram.h \
+	orcrule.h \
+	orcsse.h \
+	orctarget.h \
+	orcutils.h \
+	orcvariable.h \
+	orcx86.h \
 	orcx86insn.h \
-	orccpuinsn.h \
-	orc-stdint.h
+	orcmips.h
 
-noinst_PROGRAMS = generate-emulation
+noinst_HEADERS = \
+	opcodes.h
+
+noinst_PROGRAMS = generate-emulation generate-bytecode
 
 generate_emulation_LDADD = $(ORC_LIBS)
 generate_emulation_CFLAGS = $(ORC_CFLAGS)
 generate_emulation_DEPENDENCIES = liborc-0.4.la
 
-update: generate-emulation
+generate_bytecode_LDADD = $(ORC_LIBS)
+generate_bytecode_CFLAGS = $(ORC_CFLAGS)
+generate_bytecode_DEPENDENCIES = liborc-0.4.la
+
+update: generate-emulation generate-bytecode
 	$(top_builddir)/tools/orcc$(EXEEXT) --implementation -o orcfunctions.c orcfunctions.orc
 	$(top_builddir)/tools/orcc$(EXEEXT) --header -o orcfunctions.h orcfunctions.orc
 	./generate-emulation$(EXEEXT) -o orcemulateopcodes.c
 	./generate-emulation$(EXEEXT) --header -o orcemulateopcodes.h
+	./generate-bytecode$(EXEEXT) --header -o orcbytecode.h
 	

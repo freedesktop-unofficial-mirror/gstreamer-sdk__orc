@@ -18,6 +18,7 @@ noinst_PROGRAMS = $(TESTS) generate_xml_table generate_xml_table2 \
 	generate_opcodes_sys compile_parse compile_parse_c memcpy_speed \
 	perf_opcodes_sys_compare perf_parse_compare \
 	exec_parse \
+	bytecode_parse \
 	compile_opcodes_sys_c \
 	compile_opcodes_sys \
 	show_parse
@@ -34,6 +35,10 @@ endif
 
 if ENABLE_BACKEND_C64X
 noinst_PROGRAMS += compile_opcodes_sys_c64x
+endif
+
+if ENABLE_BACKEND_MIPS
+noinst_PROGRAMS += compile_opcodes_sys_mips
 endif
 
 AM_CFLAGS = $(ORC_CFLAGS)

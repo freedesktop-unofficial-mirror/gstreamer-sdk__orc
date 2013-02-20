@@ -9,6 +9,8 @@
 #include <orc/orcdebug.h>
 #include <orc/orconce.h>
 
+#include "orcinternal.h"
+
 /**
  * SECTION:orc
  * @title: Orc
@@ -57,6 +59,9 @@ orc_init (void)
 #endif
 #ifdef ENABLE_BACKEND_NEON
       orc_neon_init();
+#endif
+#ifdef ENABLE_BACKEND_MIPS
+      orc_mips_init();
 #endif
 
       inited = TRUE;

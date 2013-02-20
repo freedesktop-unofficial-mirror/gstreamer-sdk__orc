@@ -120,7 +120,7 @@ orcdebug
 @func: 
 @line: 
 @format: 
-@Varargs: 
+@...: 
 
 
 <!-- ##### FUNCTION orc_debug_set_level ##### -->
