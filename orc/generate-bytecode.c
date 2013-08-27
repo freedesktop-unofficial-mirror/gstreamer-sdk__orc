@@ -34,6 +34,7 @@ void help (void)
   printf("\n");
   printf("Application Options:\n");
   printf("  -o, --output FILE       Write output to FILE\n");
+  printf("      --header            Write header instead of .c file\n");
   printf("\n");
 
   exit (0);
@@ -77,7 +78,8 @@ main (int argc, char *argv[])
   }
 
   if (output_file == NULL) {
-    output_file = "out.c";
+    output_file = output_header ? "out.h" : "out.c";
+    printf("Writing to file: %s\n", output_file);
   }
 
   output = fopen (output_file, "w");
@@ -122,7 +124,8 @@ main (int argc, char *argv[])
     fprintf(output, "  ORC_BC_ADD_PARAMETER_INT64,\n");
     fprintf(output, "  ORC_BC_ADD_PARAMETER_DOUBLE,\n");
     fprintf(output, "  ORC_BC_ADD_TEMPORARY,\n");
-    for (i=21;i<32;i++){
+    fprintf(output, "  ORC_BC_INSTRUCTION_FLAGS,\n");
+    for (i=22;i<32;i++){
       fprintf(output, "  ORC_BC_RESERVED_%d,\n", i);
     }
     for(i=0;i<opcode_set->n_opcodes;i++){
@@ -163,7 +166,8 @@ main (int argc, char *argv[])
     fprintf(output, "  ORC_BC_ADD_PARAMETER_INT64,\n");
     fprintf(output, "  ORC_BC_ADD_PARAMETER_DOUBLE,\n");
     fprintf(output, "  ORC_BC_ADD_TEMPORARY,\n");
-    for (i=21;i<32;i++){
+    fprintf(output, "  ORC_BC_INSTRUCTION_FLAGS,\n");
+    for (i=22;i<32;i++){
       fprintf(output, "  ORC_BC_RESERVED_%d,\n", i);
     }
 

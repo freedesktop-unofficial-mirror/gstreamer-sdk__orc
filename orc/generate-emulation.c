@@ -35,6 +35,7 @@ void help (void)
   printf("\n");
   printf("Application Options:\n");
   printf("  -o, --output FILE       Write output to FILE\n");
+  printf("      --header            Write header instead of .c file\n");
   printf("\n");
 
   exit (0);
@@ -78,7 +79,8 @@ main (int argc, char *argv[])
   }
 
   if (output_file == NULL) {
-    output_file = "out.c";
+    output_file = output_header ? "out.h" : "out.c";
+    printf("Writing to file: %s\n", output_file);
   }
 
   output = fopen (output_file, "w");

@@ -13,6 +13,7 @@
       <sub name="OrcProgram" link="orc-OrcProgram.html"/>
       <sub name="OrcCompiler" link="orc-OrcCompiler.html"/>
       <sub name="OrcExecutor" link="orc-OrcExecutor.html"/>
+      <sub name="Orc Program Syntax" link="orc-program.html"/>
       <sub name="Orc Opcodes" link="orc-opcodes.html"/>
     </sub>
     <sub name="Extension API" link="ch03.html">
@@ -87,6 +88,15 @@
     <keyword type="function" name="orc_executor_set_param ()" link="orc-OrcExecutor.html#orc-executor-set-param"/>
     <keyword type="function" name="orc_executor_set_param_str ()" link="orc-OrcExecutor.html#orc-executor-set-param-str"/>
     <keyword type="function" name="orc_executor_set_program ()" link="orc-OrcExecutor.html#orc-executor-set-program"/>
+    <keyword type="" name=".init" link="orc-program.html#idp9410144"/>
+    <keyword type="" name=".function" link="orc-program.html#idp7684464"/>
+    <keyword type="" name=".flags" link="orc-program.html#idp6471072"/>
+    <keyword type="" name=".source" link="orc-program.html#idp7689696"/>
+    <keyword type="" name=".dest" link="orc-program.html#idp9686304"/>
+    <keyword type="" name=".accumulator" link="orc-program.html#idp8430080"/>
+    <keyword type="" name=".param" link="orc-program.html#idp7108960"/>
+    <keyword type="" name=".const" link="orc-program.html#idp10587648"/>
+    <keyword type="" name=".temp" link="orc-program.html#idp6970912"/>
     <keyword type="enum" name="enum OrcDebugLevel" link="orc-OrcDebug.html#OrcDebugLevel"/>
     <keyword type="function" name="OrcDebugPrintFunc ()" link="orc-OrcDebug.html#OrcDebugPrintFunc"/>
     <keyword type="macro" name="ORC_DEBUG_PRINT()" link="orc-OrcDebug.html#ORC-DEBUG-PRINT:CAPS"/>
